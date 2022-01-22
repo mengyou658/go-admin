@@ -43,10 +43,18 @@ settings:
     # 代码生成读取的数据库名称
     dbname: go-admin-ruoyi
     # 代码生成是使用前端代码存放位置，需要指定到src文件夹，相对路径
-    frontpath: ../Personnelinformation-web/src
+    frontpath: E:/work_chenzong/Personnelinformation-web/src
   extend: # 扩展项使用说明
-    demo:
-      name: data
+    gen:
+      serverpath: E:/work_chenzong/Personnelinformation-server-go
+      modelFlag:
+        models: true
+        apis: false
+        router: false
+        dto: true
+        service: false
+        api_js: true
+        vue: true
   cache:
 #    redis:
 #      addr: 127.0.0.1:6379
