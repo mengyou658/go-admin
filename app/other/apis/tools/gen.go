@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"go-admin/app/admin/service"
 	"go-admin/app/admin/service/dto"
+	"go-admin/common"
+	ext "go-admin/config"
 	"strconv"
 	"strings"
 	"text/template"
@@ -83,7 +85,7 @@ func (e Gen) Preview(c *gin.Context) {
 		return
 	}
 
-	tab, _ := table.Get(db,false)
+	tab, _ := table.Get(db, false)
 	var b1 bytes.Buffer
 	err = t1.Execute(&b1, tab)
 	var b2 bytes.Buffer
@@ -129,7 +131,7 @@ func (e Gen) GenCode(c *gin.Context) {
 	}
 
 	table.TableId = id
-	tab, _ := table.Get(db,false)
+	tab, _ := table.Get(db, false)
 
 	e.NOActionsGen(c, tab)
 
@@ -155,7 +157,7 @@ func (e Gen) GenApiToFile(c *gin.Context) {
 	}
 
 	table.TableId = id
-	tab, _ := table.Get(db,false)
+	tab, _ := table.Get(db, false)
 	e.genApiToFile(c, tab)
 
 	e.OK("", "Code generated successfully！")
@@ -216,39 +218,68 @@ func (e Gen) NOActionsGen(c *gin.Context, tab tools.SysTables) {
 		return
 	}
 
-	_ = pkg.PathCreate("./app/" + tab.PackageName + "/apis/")
-	_ = pkg.PathCreate("./app/" + tab.PackageName + "/models/")
-	_ = pkg.PathCreate("./app/" + tab.PackageName + "/router/")
-	_ = pkg.PathCreate("./app/" + tab.PackageName + "/service/dto/")
-	_ = pkg.PathCreate(config.GenConfig.FrontPath + "/api/" + tab.PackageName + "/")
-	err = pkg.PathCreate(config.GenConfig.FrontPath + "/views/" + tab.PackageName + "/" + tab.MLTBName + "/")
+	serverpath := ext.ExtConfig.Gen.Serverpath
+	ModelFlag := ext.ExtConfig.Gen.ModelFlag
+	if common.IsEmpty(serverpath) {
+		serverpath = "."
+	}
+	dir_apis := serverpath + "/app/" + tab.PackageName + "/apis/"
+	_ = pkg.PathCreate(dir_apis)
+	dir_models := serverpath + "/app/" + tab.PackageName + "/models/"
+	_ = pkg.PathCreate(dir_models)
+	dir_router := serverpath + "/app/" + tab.PackageName + "/router/"
+	_ = pkg.PathCreate(dir_router)
+	dir_service := serverpath + "/app/" + tab.PackageName + "/service/"
+	dir_dto := dir_service + "dto/"
+	_ = pkg.PathCreate(dir_dto)
+	dir_api_js := config.GenConfig.FrontPath + "/api/" + tab.PackageName + "/"
+	_ = pkg.PathCreate(dir_api_js)
+	dir_vue := config.GenConfig.FrontPath + "/views/" + tab.PackageName + "/" + tab.MLTBName + "/"
+	err = pkg.PathCreate(dir_vue)
 	if err != nil {
 		log.Error(err)
 		e.Error(500, err, fmt.Sprintf("views目录创建失败！错误详情：%s", err.Error()))
 		return
 	}
 
-	var b1 bytes.Buffer
-	err = t1.Execute(&b1, tab)
-	var b2 bytes.Buffer
-	err = t2.Execute(&b2, tab)
-	var b3 bytes.Buffer
-	err = t3.Execute(&b3, tab)
-	var b4 bytes.Buffer
-	err = t4.Execute(&b4, tab)
-	var b5 bytes.Buffer
-	err = t5.Execute(&b5, tab)
-	var b6 bytes.Buffer
-	err = t6.Execute(&b6, tab)
-	var b7 bytes.Buffer
-	err = t7.Execute(&b7, tab)
-	pkg.FileCreate(b1, "./app/"+tab.PackageName+"/models/"+tab.TBName+".go")
-	pkg.FileCreate(b2, "./app/"+tab.PackageName+"/apis/"+tab.TBName+".go")
-	pkg.FileCreate(b3, "./app/"+tab.PackageName+"/router/"+tab.TBName+".go")
-	pkg.FileCreate(b4, config.GenConfig.FrontPath+"/api/"+tab.PackageName+"/"+tab.MLTBName+".js")
-	pkg.FileCreate(b5, config.GenConfig.FrontPath+"/views/"+tab.PackageName+"/"+tab.MLTBName+"/index.vue")
-	pkg.FileCreate(b6, "./app/"+tab.PackageName+"/service/dto/"+tab.TBName+".go")
-	pkg.FileCreate(b7, "./app/"+tab.PackageName+"/service/"+tab.TBName+".go")
+	if ModelFlag.Models {
+		var buf_models bytes.Buffer
+		err = t1.Execute(&buf_models, tab)
+		pkg.FileCreate(buf_models, dir_models+tab.TBName+".go")
+	}
+	if ModelFlag.Apis {
+		var buf_apis bytes.Buffer
+		err = t2.Execute(&buf_apis, tab)
+		pkg.FileCreate(buf_apis, dir_apis+tab.TBName+".go")
+	}
+	if ModelFlag.Router {
+		var buf_router bytes.Buffer
+		err = t3.Execute(&buf_router, tab)
+		pkg.FileCreate(buf_router, dir_router+tab.TBName+".go")
+	}
+
+	if ModelFlag.Api_js {
+		var buf_api_js bytes.Buffer
+		err = t4.Execute(&buf_api_js, tab)
+		pkg.FileCreate(buf_api_js, dir_api_js+tab.MLTBName+".js")
+	}
+	if ModelFlag.Vue {
+		var buf_vue bytes.Buffer
+		err = t5.Execute(&buf_vue, tab)
+		pkg.FileCreate(buf_vue, dir_vue+"index.vue")
+	}
+
+	if ModelFlag.Dto {
+		var buf_dto bytes.Buffer
+		err = t6.Execute(&buf_dto, tab)
+		pkg.FileCreate(buf_dto, dir_dto+tab.TBName+".go")
+	}
+
+	if ModelFlag.Service {
+		var buf_service bytes.Buffer
+		err = t7.Execute(&buf_service, tab)
+		pkg.FileCreate(buf_service, dir_service+tab.TBName+".go")
+	}
 
 }
 
@@ -302,7 +333,7 @@ func (e Gen) GenMenuAndApi(c *gin.Context) {
 	}
 
 	table.TableId = id
-	tab, _ := table.Get(e.Orm,true)
+	tab, _ := table.Get(e.Orm, true)
 	tab.MLTBName = strings.Replace(tab.TBName, "_", "-", -1)
 
 	Mmenu := dto.SysMenuInsertReq{}

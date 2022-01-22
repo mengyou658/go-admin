@@ -30,7 +30,7 @@ settings:
     # 数据库类型 mysql，sqlite3， postgres
     driver: mysql
     # 数据库连接字符串 mysql 缺省信息 charset=utf8&parseTime=True&loc=Local&timeout=1000ms
-    source: user:password@tcp(127.0.0.1:3306)/dbname?charset=utf8&parseTime=True&loc=Local&timeout=1000ms
+    source: root:admin@tcp(127.0.0.1:3306)/go-admin?charset=utf8&parseTime=True&loc=Local&timeout=1000ms
 #  databases:
 #    'locaohost:8000':
 #      driver: mysql
@@ -41,12 +41,20 @@ settings:
 #            - user:password@tcp(127.0.0.1:3306)/dbname?charset=utf8&parseTime=True&loc=Local&timeout=1000ms
   gen:
     # 代码生成读取的数据库名称
-    dbname: dbname
+    dbname: go-admin-ruoyi
     # 代码生成是使用前端代码存放位置，需要指定到src文件夹，相对路径
-    frontpath: ../go-admin-ui/src
+    frontpath: E:/work_chenzong/Personnelinformation-web/src
   extend: # 扩展项使用说明
-    demo:
-      name: data
+    gen:
+      serverpath: E:/work_chenzong/Personnelinformation-server-go
+      modelFlag:
+        models: true
+        apis: false
+        router: false
+        dto: true
+        service: false
+        api_js: true
+        vue: true
   cache:
 #    redis:
 #      addr: 127.0.0.1:6379
