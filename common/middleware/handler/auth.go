@@ -120,7 +120,7 @@ func LoginLogToDB(c *gin.Context, status string, msg string, username string) {
 	ua := user_agent.New(c.Request.UserAgent())
 	l["ipaddr"] = common.GetClientIP(c)
 	fmt.Println("gaConfig.ExtConfig.AMap.Key", gaConfig.ExtConfig.AMap.Key)
-	l["loginLocation"] = pkg.GetLocation(common.GetClientIP(c),gaConfig.ExtConfig.AMap.Key)
+	l["loginLocation"] = pkg.GetLocation(common.GetClientIP(c), gaConfig.ExtConfig.AMap.Key)
 	l["loginTime"] = pkg.GetCurrentTime()
 	l["status"] = status
 	l["remark"] = c.Request.UserAgent()
@@ -171,7 +171,7 @@ func Authorizator(data interface{}, c *gin.Context) bool {
 		c.Set("role", r.RoleName)
 		c.Set("roleIds", r.RoleId)
 		c.Set("userId", u.UserId)
-		c.Set("userName", u.Username)
+		c.Set("userName", u.UserName)
 		c.Set("dataScope", r.DataScope)
 		return true
 	}
